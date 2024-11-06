@@ -1,70 +1,31 @@
 import logging
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
+import pandas as pd
 
 from config.config import DatabaseConfig
 
 logger = logging.getLogger(__name__)
 
-
-class Database:
+class DatabaseConnection:
     def __init__(self, config: DatabaseConfig):
         self.config = config
         self.engine = create_engine(
             f'postgresql://{config.user}:{config.password}@{config.host}:{config.port}/{config.database}'
         )
 
-    def initialize_database(self):
-        """Create database schema and tables"""
-        queries = [
-            """
-            CREATE SCHEMA IF NOT EXISTS trading;
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS trading.price_data (
-                symbol VARCHAR(10),
-                timestamp TIMESTAMP,
-                open DECIMAL,
-                high DECIMAL,
-                low DECIMAL,
-                close DECIMAL,
-                volume BIGINT,
-                PRIMARY KEY (symbol, timestamp)
-            ) PARTITION BY RANGE (timestamp);
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS trading.signals (
-                id SERIAL PRIMARY KEY,
-                symbol VARCHAR(10),
-                timestamp TIMESTAMP,
-                signal_type VARCHAR(10),
-                price DECIMAL,
-                quantity INTEGER,
-                reason VARCHAR(100)
-            );
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS trading.backtest_results (
-                id SERIAL PRIMARY KEY,
-                start_date TIMESTAMP,
-                end_date TIMESTAMP,
-                initial_capital DECIMAL,
-                final_capital DECIMAL,
-                sharpe_ratio DECIMAL,
-                max_drawdown DECIMAL,
-                total_trades INTEGER,
-                winning_trades INTEGER,
-                losing_trades INTEGER
-            );
-            """
-        ]
-
+    def execute_query(self, query: str, params: dict = None) -> pd.DataFrame:
         try:
-            for query in queries:
-                with self.engine.connect() as conn:
-                    conn.execute(text(query))
-                    conn.commit()
-            logger.info("Database initialized successfully")
+            with self.engine.connect() as conn:
+                result = conn.execute(text(query), params or {})
+                return pd.DataFrame(result.fetchall(), columns=result.keys())
         except SQLAlchemyError as e:
-            logger.error(f"Database initialization failed: {str(e)}")
+            logger.error(f"Database query failed: {str(e)}")
+            raise
+
+    def insert_dataframe(self, df: pd.DataFrame, table: str, schema: str):
+        try:
+            df.to_sql(table, self.engine, schema=schema, if_exists='append', index=False)
+        except SQLAlchemyError as e:
+            logger.error(f"Failed to insert data into {schema}.{table}: {str(e)}")
             raise
