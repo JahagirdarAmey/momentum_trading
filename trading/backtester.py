@@ -1,12 +1,16 @@
 import datetime
 import logging
+from dataclasses import asdict
+from pathlib import Path
 from typing import Dict
 
 import numpy as np
 import pandas as pd
+import yaml
 
 from config.config import Config
 from data.database import DatabaseConnection
+from exceptions.trading_exceptions import DataError, BacktestError
 from trading.momentum import MomentumStrategy
 
 logger = logging.getLogger(__name__)
@@ -307,3 +311,86 @@ class Backtester:
             'max_consecutive_losses': 0,
             'average_holding_period': 0
         }
+
+    def load_backtest_data(self, symbol: str) -> pd.DataFrame:
+        """
+        Load historical data for backtesting
+
+        Args:
+            symbol: Trading symbol to load data for
+
+        Returns:
+            DataFrame with OHLCV data for the specified date range
+        """
+        try:
+            start_date = self.config.backtest.start_date
+            end_date = self.config.backtest.end_date
+
+            query = f"""
+                SELECT timestamp, open, high, low, close, volume 
+                FROM price_data 
+                WHERE symbol = %s 
+                AND timestamp BETWEEN %s AND %s 
+                ORDER BY timestamp
+            """
+
+            data = pd.read_sql(
+                query,
+                self.db.connection,
+                params=(symbol, start_date, end_date),
+                index_col='timestamp'
+            )
+
+            if data.empty:
+                logger.warning(f"No data found for {symbol} between {start_date} and {end_date}")
+                return pd.DataFrame()
+
+            return data
+
+        except Exception as e:
+            raise DataError(f"Failed to load backtest data for {symbol}: {str(e)}") from e
+
+    def save_results(self):
+        """Save backtest results to database and local files"""
+        try:
+            # Save trade history
+            trades_df = pd.DataFrame(self.results['trades'])
+            if not trades_df.empty:
+                trades_df.to_sql(
+                    'backtest_trades',
+                    self.db.connection,
+                    if_exists='append',
+                    index=False
+                )
+
+            # Save equity curve
+            equity_df = pd.DataFrame(self.results['equity_curve'])
+            if not equity_df.empty:
+                equity_df.to_sql(
+                    'backtest_equity',
+                    self.db.connection,
+                    if_exists='append',
+                    index=False
+                )
+
+            # Save configuration and parameters
+            backtest_info = {
+                'timestamp': datetime.now(),
+                'strategy_params': self.results['strategy_params'],
+                'config': asdict(self.config)
+            }
+
+            # Save to local file
+            output_dir = Path(self.config.backtest.output_dir)
+            output_dir.mkdir(exist_ok=True)
+
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            result_file = output_dir / f'backtest_results_{timestamp}.yaml'
+
+            with open(result_file, 'w') as f:
+                yaml.dump(backtest_info, f)
+
+            logger.info(f"Backtest results saved to {result_file}")
+
+        except Exception as e:
+            raise BacktestError(f"Failed to save backtest results: {str(e)}") from e

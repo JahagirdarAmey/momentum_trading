@@ -14,6 +14,7 @@ from pip._internal.exceptions import ConfigurationError
 from config.config import BacktestConfig, Config, TradingConfig, StrategyConfig
 from data.data_fetcher import DataFetcher
 from data.database import DatabaseConnection
+from exceptions.trading_exceptions import TradingSystemError, ExecutionError
 from trading.backtester import Backtester
 from trading.executor import TradeExecutor
 from trading.momentum import MomentumStrategy
@@ -97,3 +98,56 @@ class TradingSystem:
         """Gracefully shutdown the trading system"""
         self.logger.info("Initiating trading system shutdown...")
         self.running = False
+
+    def log_backtest_results(self, metrics: Dict):
+        """Log summary of backtest results"""
+        self.logger.info("Backtest Results Summary:")
+        self.logger.info("-" * 40)
+        self.logger.info(f"Total Return: {metrics['total_return']:.2%}")
+        self.logger.info(f"Sharpe Ratio: {metrics['sharpe_ratio']:.2f}")
+        self.logger.info(f"Max Drawdown: {metrics['max_drawdown']:.2%}")
+        self.logger.info(f"Total Trades: {metrics['total_trades']}")
+        self.logger.info(f"Win Rate: {metrics['win_rate']:.2%}")
+        self.logger.info(f"Profit Factor: {metrics['profit_factor']:.2f}")
+        self.logger.info(f"Average Holding Period: {metrics['average_holding_period']:.1f} hours")
+        self.logger.info("-" * 40)
+
+    def _execute_trading_cycle(self, data_fetcher: DataFetcher, executor: TradeExecutor):
+        """Execute a single trading cycle"""
+        try:
+            # Update market data
+            for symbol in self.config.trading.symbols:
+                data_fetcher.update_market_data(symbol)
+
+            # Check for signals and execute trades
+            current_time = datetime.now()
+            strategy = MomentumStrategy(self.db, self.config)
+
+            for symbol in self.config.trading.symbols:
+                # Get current market data
+                current_data = data_fetcher.get_latest_data(symbol)
+                if current_data is None:
+                    continue
+
+                current_price = current_data['close']
+                position = executor.get_position(symbol)
+
+                # Check for entry signals
+                if position == 0:
+                    if strategy.check_entry_signal(symbol, current_price, current_time):
+                        executor.enter_position(symbol, self.config.trading.position_size)
+
+                # Check for exit signals
+                elif position > 0:
+                    exit_signal, exit_size = strategy.check_exit_signal(
+                        symbol, executor.get_entry_price(symbol),
+                        current_price, position, current_time
+                    )
+                    if exit_signal:
+                        executor.exit_position(symbol, exit_size)
+
+            # Sleep until next cycle
+            time.sleep(self.config.trading.cycle_interval)
+
+        except Exception as e:
+            raise ExecutionError(f"Error in trading cycle: {str(e)}") from e
