@@ -7,100 +7,50 @@ import pandas as pd
 
 from config.config import Config
 from data.database import DatabaseConnection
-
+from trading.momentum import MomentumStrategy
 
 logger = logging.getLogger(__name__)
 
 class Backtester:
+
     def __init__(self, db: DatabaseConnection, config: Config):
         self.db = db
         self.config = config
-        self.results = {
+        self.strategy = MomentumStrategy(db, config)
+        self.results = self._initialize_results()
+
+    def _initialize_results(self) -> Dict:
+        return {
             'trades': [],
             'equity_curve': [],
-            'positions': {}
+            'positions': {},
+            'strategy_params': self.strategy.get_strategy_params()
         }
-        self.initial_stoploss_pct = 0.02  # 2% fixed initial stoploss
 
     def simulate_trades(self, symbol: str, data: pd.DataFrame):
         """Simulate trading for a single symbol"""
         position = 0
         entry_price = 0
-        highest_price = 0
-        initial_stoploss = 0
-        partial_exit_hit = False
 
         for i in range(len(data)):
             current_price = data['close'].iloc[i]
             current_time = data.index[i]
 
             if position == 0:
-                # Check entry condition
-                high_52w = self.calculate_52_week_high(data, i)
-                if current_price > high_52w:
-                    position = 1
+                if self.strategy.check_entry_signal(symbol, current_price, current_time):
+                    position = self.config.trading.position_size
                     entry_price = current_price
-                    highest_price = current_price
-                    initial_stoploss = entry_price * (1 - self.initial_stoploss_pct)
-                    partial_exit_hit = False
-
-                    self._record_trade(
-                        symbol=symbol,
-                        timestamp=current_time,
-                        trade_type='ENTRY',
-                        price=current_price,
-                        quantity=self.config.trading.position_size,
-                        note="Entry on 52-week high breakout"
-                    )
+                    self._record_trade(symbol, current_time, 'ENTRY', current_price, position)
 
             elif position > 0:
-                # Check for initial stoploss before partial exit
-                if not partial_exit_hit and current_price <= initial_stoploss:
-                    # Exit entire position on initial stoploss
-                    self._record_trade(
-                        symbol=symbol,
-                        timestamp=current_time,
-                        trade_type='STOP_EXIT',
-                        price=current_price,
-                        quantity=position,
-                        note="Initial 2% stoploss hit"
-                    )
-                    position = 0
-                    continue
-
-                # Check profit target for partial exit
-                if not partial_exit_hit and current_price >= entry_price * (1 + self.config.trading.profit_target_pct):
-                    # Exit half position
-                    partial_exit_hit = True
-                    position = 0.5
-                    self._record_trade(
-                        symbol=symbol,
-                        timestamp=current_time,
-                        trade_type='PARTIAL_EXIT',
-                        price=current_price,
-                        quantity=0.5,
-                        note="4% profit target hit - partial exit"
-                    )
-                    # Reset highest price for trailing stop
-                    highest_price = current_price
-                    continue
-
-                # After partial exit, use trailing stop
-                if partial_exit_hit:
-                    highest_price = max(highest_price, current_price)
-                    trail_price = highest_price * (1 - self.config.trading.trailing_stop_pct)
-
-                    if current_price < trail_price:
-                        # Exit remaining position
-                        self._record_trade(
-                            symbol=symbol,
-                            timestamp=current_time,
-                            trade_type='STOP_EXIT',
-                            price=current_price,
-                            quantity=position,
-                            note="Trailing stop hit after partial exit"
-                        )
-                        position = 0
+                exit_signal, exit_size = self.strategy.check_exit_signal(
+                    symbol, entry_price, current_price, position, current_time
+                )
+                if exit_signal:
+                    self._record_trade(symbol, current_time, 'EXIT', current_price, exit_size)
+                    position -= exit_size
+                    if position <= 0:
+                        entry_price = 0
 
     def _record_trade(self, symbol: str, timestamp: datetime,
                       trade_type: str, price: float, quantity: float, note: str):

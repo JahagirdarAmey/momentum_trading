@@ -1,7 +1,8 @@
 from dataclasses import dataclass
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Tuple
 from pathlib import Path
 from datetime import datetime
+
 
 @dataclass
 class DatabaseConfig:
@@ -11,13 +12,30 @@ class DatabaseConfig:
     user: str = "trader"
     password: str = "your_password"
 
+
 @dataclass
-class TradingConfig:
-    symbols: List[str] = ("AAPL", "MSFT", "GOOGL", "AMZN", "NVDA")
-    initial_capital: float = 100000.0
-    position_size: float = 0.5  # 50% exit at target
+class StrategyConfig:
+    # Core strategy parameters
+    lookback_periods: int = 252  # 52 weeks of trading days
+    min_history_periods: int = 20  # Minimum required history
+
+    # Entry conditions
+    entry_breakout_threshold: float = 1.0  # Multiple of 52-week high
+
+    # Exit conditions
+    initial_stoploss_pct: float = 0.02  # 2% initial stoploss
     profit_target_pct: float = 0.04  # 4% target
     trailing_stop_pct: float = 0.02  # 2% trailing stop
+    partial_exit_size: float = 0.5  # 50% exit at target
+
+
+@dataclass
+class TradingConfig:
+    symbols: Tuple[str, ...] = ("AAPL", "MSFT", "GOOGL", "AMZN", "NVDA")
+    initial_capital: float = 100000.0
+    position_size: float = 1.0  # Full position size
+    strategy: StrategyConfig = StrategyConfig()
+
 
 @dataclass
 class BacktestConfig:
@@ -25,6 +43,7 @@ class BacktestConfig:
     end_date: datetime
     initial_capital: float = 100000.0
     commission_pct: float = 0.001  # 0.1% commission per trade
+
 
 @dataclass
 class Config:

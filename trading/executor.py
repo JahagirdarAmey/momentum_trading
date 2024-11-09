@@ -1,10 +1,7 @@
-import logging
-
 from config.config import Config
 from data.database import DatabaseConnection
-from trading.strategy import MomentumStrategy
+from trading.momentum import MomentumStrategy
 
-logger = logging.getLogger(__name__)
 
 class TradeExecutor:
     def __init__(self, db: DatabaseConnection, config: Config):
@@ -19,9 +16,10 @@ class TradeExecutor:
                 current_price = self.get_current_price(symbol)
                 position = self.get_current_position(symbol)
 
-                if position == 0 and self.strategy.check_entry_signal(symbol, current_price):
-                    self.execute_entry(symbol, current_price)
-                elif position > 0:
+                if position == 0:
+                    if self.strategy.check_entry_signal(symbol, current_price):
+                        self.execute_entry(symbol, current_price)
+                else:
                     exit_signal, exit_size = self.strategy.check_exit_signal(
                         symbol, self.get_entry_price(symbol), current_price, position
                     )
