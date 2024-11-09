@@ -1,19 +1,13 @@
 # main.py
 import logging
 import time
-from datetime import datetime, timedelta
-from pathlib import Path
-from typing import Optional, Dict
-import argparse
-import sys
-import yaml
-from dataclasses import asdict
+from datetime import datetime
+from typing import Dict
 
-from pip._internal.exceptions import ConfigurationError
-
-from config.config import BacktestConfig, Config, TradingConfig, StrategyConfig
+from config.config import Config
 from data.data_fetcher import DataFetcher
 from data.database import DatabaseConnection
+from exceptions.trading_exceptions import ConfigError
 from exceptions.trading_exceptions import TradingSystemError, ExecutionError
 from trading.backtester import Backtester
 from trading.executor import TradeExecutor
@@ -42,14 +36,13 @@ class TradingSystem:
         )
 
     def run_backtest(self) -> Dict:
-        """Run backtest with given configuration"""
         if not self.config.backtest:
-            raise ConfigurationError("Backtest configuration not provided")
+            raise ConfigError("Backtest configuration not provided")
 
         self.logger.info("Starting backtest...")
         try:
             backtester = Backtester(self.db, self.config)
-            metrics = {}
+            metrics = {}  # Initialize metrics
 
             # Process each symbol
             for symbol in self.config.trading.symbols:
@@ -62,11 +55,9 @@ class TradingSystem:
 
                 backtester.simulate_trades(symbol, data)
 
-            # Calculate and save results
-            metrics = backtester.calculate_metrics()
+            metrics = backtester.calculate_metrics()  # Update metrics
             backtester.save_results()
 
-            # Log results summary
             self.log_backtest_results(metrics)
             return metrics
 

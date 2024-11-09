@@ -36,6 +36,11 @@ class TradingConfig:
     position_size: float = 1.0  # Full position size
     strategy: StrategyConfig = StrategyConfig()
 
+@dataclass
+class TradingConfig:
+    symbols: List[str]
+    position_size: float
+    cycle_interval: int = 60
 
 @dataclass
 class BacktestConfig:
