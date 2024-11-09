@@ -1,12 +1,11 @@
-import yfinance as yf
-import pandas as pd
-from datetime import datetime, timedelta
 import logging
-from typing import List, Optional, Dict, Union
-from sqlalchemy import text, exc
-from sqlalchemy.engine.base import Engine
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import numpy as np
+from datetime import datetime, timedelta
+from typing import List, Optional, Dict, Union
+
+import pandas as pd
+import yfinance as yf
+from sqlalchemy import text, exc
 
 from config.config import Config
 from data.database import DatabaseConnection

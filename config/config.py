@@ -28,14 +28,6 @@ class StrategyConfig:
     trailing_stop_pct: float = 0.02  # 2% trailing stop
     partial_exit_size: float = 0.5  # 50% exit at target
 
-
-@dataclass
-class TradingConfig:
-    symbols: Tuple[str, ...] = ("AAPL", "MSFT", "GOOGL", "AMZN", "NVDA")
-    initial_capital: float = 100000.0
-    position_size: float = 1.0  # Full position size
-    strategy: StrategyConfig = StrategyConfig()
-
 @dataclass
 class TradingConfig:
     symbols: List[str]
