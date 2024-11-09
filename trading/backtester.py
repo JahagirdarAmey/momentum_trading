@@ -190,6 +190,7 @@ class Backtester:
 
         return metrics
 
+    @staticmethod
     def _calculate_max_consecutive_losses(self, trades_df: pd.DataFrame) -> int:
         """Calculate maximum consecutive losing trades"""
         if trades_df.empty:
@@ -207,6 +208,7 @@ class Backtester:
 
         return max_consecutive_losses
 
+    @staticmethod
     def _calculate_avg_holding_period(self, trades_df: pd.DataFrame) -> float:
         """Calculate average holding period in hours"""
         if trades_df.empty:
@@ -228,6 +230,7 @@ class Backtester:
 
         return np.mean(holding_periods) if holding_periods else 0
 
+    @staticmethod
     def _get_empty_metrics(self) -> Dict:
         """Return empty metrics when no trades are executed"""
         return {

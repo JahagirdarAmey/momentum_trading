@@ -1,13 +1,13 @@
 import logging
 
 from config.config import Config
-from data.database import Database
+from data.database import DatabaseConnection
 from trading.strategy import MomentumStrategy
 
 logger = logging.getLogger(__name__)
 
 class TradeExecutor:
-    def __init__(self, db: Database, config: Config):
+    def __init__(self, db: DatabaseConnection, config: Config):
         self.db = db
         self.config = config
         self.strategy = MomentumStrategy(db, config)

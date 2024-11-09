@@ -4,17 +4,19 @@ import numpy as np
 import pandas as pd
 from sqlalchemy import text
 
-from data.database import Database
+from data.database import DatabaseConnection
 
 
 class PerformanceMetrics:
-    def __init__(self, db: Database):
+    def __init__(self, db: DatabaseConnection):
         self.db = db
 
-    def calculate_sharpe_ratio(self, returns: pd.Series) -> float:
+    @staticmethod
+    def calculate_sharpe_ratio(returns: pd.Series) -> float:
         """Calculate Sharpe ratio"""
         return np.sqrt(252) * (returns.mean() / returns.std())
 
+    @staticmethod
     def calculate_max_drawdown(self, equity_curve: pd.Series) -> float:
         """Calculate maximum drawdown"""
         rolling_max = equity_curve.cummax()

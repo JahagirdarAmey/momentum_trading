@@ -33,6 +33,12 @@ CREATE TABLE trading.price_data_2024 PARTITION OF trading.price_data
     FOR VALUES FROM ('2024-01-01') TO ('2025-01-01');
 CREATE TABLE trading.price_data_2023 PARTITION OF trading.price_data
     FOR VALUES FROM ('2023-01-01') TO ('2024-01-01');
+CREATE TABLE trading.price_data_2023 PARTITION OF trading.price_data
+    FOR VALUES FROM ('2022-01-01') TO ('2023-01-01');
+CREATE TABLE trading.price_data_2023 PARTITION OF trading.price_data
+    FOR VALUES FROM ('2021-01-01') TO ('2022-01-01');
+CREATE TABLE trading.price_data_2023 PARTITION OF trading.price_data
+    FOR VALUES FROM ('2020-01-01') TO ('2021-01-01');
 
 -- Create signals table
 CREATE TABLE trading.signals (

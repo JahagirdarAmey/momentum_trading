@@ -7,12 +7,12 @@ from typing import List
 from sqlalchemy import text
 
 from config.config import Config
-from data.database import Database
+from data.database import DatabaseConnection
 
 logger = logging.getLogger(__name__)
 
 class DataFetcher:
-    def __init__(self, db: Database, config: Config):
+    def __init__(self, db: DatabaseConnection, config: Config):
         self.db = db
         self.config = config
 
