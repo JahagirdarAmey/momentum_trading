@@ -231,6 +231,113 @@ class Backtester:
         return np.mean(holding_periods) if holding_periods else 0
 
     @staticmethod
+    def _calculate_sharpe_ratio(trades_df: pd.DataFrame) -> float:
+        """
+        Calculate the Sharpe ratio based on trade returns
+
+        Args:
+            trades_df: DataFrame containing trade information with 'pnl' column
+
+        Returns:
+            float: Annualized Sharpe ratio, or 0 if insufficient data
+        """
+        if trades_df.empty or 'pnl' not in trades_df.columns:
+            return 0.0
+
+        # Convert PnL to returns and drop non-exit trades
+        trade_returns = trades_df[trades_df['type'].isin(['STOP_EXIT', 'PARTIAL_EXIT'])]['pnl'].values
+
+        if len(trade_returns) < 2:  # Need at least 2 trades for meaningful calculation
+            return 0.0
+
+        # Calculate daily returns statistics
+        returns_mean = np.mean(trade_returns)
+        returns_std = np.std(trade_returns, ddof=1)  # Using sample standard deviation
+
+        if returns_std == 0:  # Avoid division by zero
+            return 0.0
+
+        # Assuming 252 trading days per year
+        trading_days = 252
+
+        # Annualized the Sharpe ratio
+        sharpe_ratio = (returns_mean / returns_std) * np.sqrt(trading_days)
+
+        return float(sharpe_ratio)
+
+    @staticmethod
+    def _calculate_max_drawdown(trades_df: pd.DataFrame) -> float:
+        """
+        Calculate the maximum drawdown from peak equity
+
+        Args:
+            trades_df: DataFrame containing trade information with 'pnl' column
+
+        Returns:
+            float: Maximum drawdown as a percentage (0 to 1)
+        """
+        if trades_df.empty or 'pnl' not in trades_df.columns:
+            return 0.0
+
+        # Calculate cumulative PnL
+        cumulative_pnl = trades_df['pnl'].cumsum()
+
+        if len(cumulative_pnl) < 2:  # Need at least 2 trades for drawdown
+            return 0.0
+
+        # Calculate running maximum
+        running_max = pd.Series(index=cumulative_pnl.index)
+        running_max.iloc[0] = cumulative_pnl.iloc[0]
+
+        for i in range(1, len(cumulative_pnl)):
+            running_max.iloc[i] = max(running_max.iloc[i - 1], cumulative_pnl.iloc[i])
+
+        # Calculate drawdowns
+        drawdowns = (cumulative_pnl - running_max) / running_max
+
+        # Get the maximum drawdown
+        max_drawdown = abs(drawdowns.min()) if len(drawdowns) > 0 else 0.0
+
+        return float(max_drawdown)
+
+    @staticmethod
+    def calculate_52_week_high(data: pd.DataFrame, current_index: int) -> float:
+        """
+        Calculate the 52-week high up to the current index
+
+        Args:
+            data: DataFrame containing price data with 'high' column
+            current_index: Current position in the DataFrame
+
+        Returns:
+            float: 52-week high price
+        """
+        # Calculate number of periods for 52 weeks
+        # Assuming daily data, 252 trading days per year
+        lookback_periods = 252
+
+        # Get start index for lookback, ensuring we don't go below 0
+        start_index = max(0, current_index - lookback_periods + 1)
+
+        # Extract the relevant price history
+        price_history = data['high'].iloc[start_index:current_index + 1]
+
+        # Handle case where we don't have enough history
+        if len(price_history) < 20:  # Minimum required history
+            logger.warning(f"Insufficient price history for 52-week high calculation. "
+                           f"Only {len(price_history)} periods available.")
+            return float('inf')  # Return infinity to prevent entry signals
+
+        # Calculate 52-week high
+        high_52w = price_history.max()
+
+        # Log for debugging if needed
+        logger.debug(f"52-week high calculated: {high_52w:.2f} "
+                     f"using {len(price_history)} periods of history")
+
+        return float(high_52w)
+
+    @staticmethod
     def _get_empty_metrics(self) -> Dict:
         """Return empty metrics when no trades are executed"""
         return {
