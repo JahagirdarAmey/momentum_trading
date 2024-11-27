@@ -150,7 +150,9 @@ class HighBreakoutStrategy:
             logger.error(f"Error in backtest: {str(e)}")
             raise
 
-    def plot_backtest(self, df: pd.DataFrame, symbol: str):
+
+    @staticmethod
+    def plot_backtest(df: pd.DataFrame, symbol: str):
         """Plot backtest results"""
         try:
             plt.figure(figsize=(15, 10))

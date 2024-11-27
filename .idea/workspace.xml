@@ -5,176 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c923b39e-586c-4917-8094-2cd6649cee29" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/momentum_trade.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/ACC-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/ADANIENT-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/ADANIPORTS-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/ADANIPOWER-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/AMARAJABAT-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/AMBUJACEM-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/APOLLOHOSP-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/APOLLOTYRE-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/ARVIND-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/ASHOKLEY-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/ASIANPAINT-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/AUROPHARMA-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/AXISBANK-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/BAJAJ-AUTO-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/BAJAJFINSV-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/BAJFINANCE-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/BANKBARODA-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/BANKINDIA-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/BATAINDIA-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/BEL-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/BERGEPAINT-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/BHARATFIN-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/BHARATFORG-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/BHARTIARTL-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/BHEL-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/BIOCON-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/BOSCHLTD-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/BPCL-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/BRITANNIA-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/BSOFT-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/CADILAHC-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/CANBK-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/CASTROLIND-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/CENTURYTEX-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/CESC-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/CHOLAFIN-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/CIPLA-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/COALINDIA-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/COLPAL-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/CONCOR-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/CUMMINSIND-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/DABUR-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/DHFL-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/DISHTV-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/DIVISLAB-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/DLF-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/DRREDDY-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/EICHERMOT-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/ENGINERSIN-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/ESCORTS-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/EXIDEIND-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/FEDERALBNK-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/GAIL-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/GLENMARK-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/GMRINFRA-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/GODREJCP-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/GRASIM-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/HAVELLS-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/HCLTECH-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/HDFC-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/HDFCBANK-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/HEROMOTOCO-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/HEXAWARE-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/HINDALCO-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/HINDPETRO-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/HINDUNILVR-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/HINDZINC-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/IBULHSGFIN-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/ICICIBANK-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/IDBI-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/IDEA-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/IDFCFIRSTB-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/IGL-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/INDIANB-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/INDIGO-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/INFRATEL-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/INFY-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/IOC-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/ITC-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/JINDALSTEL-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/JSWSTEEL-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/JUBLFOOD-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/JUSTDIAL-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/KAJARIACER-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/KOTAKBANK-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/LICHSGFIN-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/LT-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/LTFH-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/LUPIN-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/MANAPPURAM-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/MARICO-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/MARUTI-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/MCDOWELL-N-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/MCX-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/MFSL-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/MINDTREE-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/MM-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/MMFIN-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/MOTHERSUMI-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/MRF-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/MUTHOOTFIN-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/NATIONALUM-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/NBCC-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/NESTLEIND-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/NMDC-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/NTPC-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/OFSS-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/OIL-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/ONGC-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/PAGEIND-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/PEL-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/PETRONET-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/PFC-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/PIDILITIND-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/PNB-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/POWERGRID-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/PVR-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/RAMCOCEM-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/RAYMOND-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/RECLTD-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/RELCAPITAL-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/RELIANCE-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/RELINFRA-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/SAIL-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/SBIN-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/SHREECEM-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/SIEMENS-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/SRF-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/SRTRANSFIN-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/STAR-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/SUNPHARMA-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/SUNTV-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/TATACHEM-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/TATAELXSI-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/TATAGLOBAL-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/TATAMOTORS-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/TATAMTRDVR-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/TATAPOWER-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/TATASTEEL-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/TCS-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/TECHM-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/TITAN-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/TORNTPHARM-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/TORNTPOWER-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/TVSMOTOR-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/UBL-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/ULTRACEMCO-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/UNIONBANK-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/UPL-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/VEDL-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/VOLTAS-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/WIPRO-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/YESBANK-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/ZEEL-15minute-Hist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/data/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/data/cache_manager.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/data/data_processor.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/data/stock_list.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/strategies/high_breakout_strategy.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/strategies/high_breakout_strategy.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/strategies/high_breakout_strategy.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -200,15 +33,15 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.data_processor.executor": "Run",
-    "Python.main.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "C:/Users/admin/PycharmProjects/momentum_trade/data"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.data_processor.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/admin/PycharmProjects/momentum_trade/data&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\admin\PycharmProjects\momentum_trade\data" />
