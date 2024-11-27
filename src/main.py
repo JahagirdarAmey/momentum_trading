@@ -157,8 +157,6 @@ async def get_cache_status():
         logger.error(f"Error getting cache status: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-
-# src/main.py
 @app.get("/backtest/{symbol}")
 async def run_backtest(
         symbol: str,
@@ -180,12 +178,16 @@ async def run_backtest(
         # Run backtest
         backtest_results = strategy.backtest(data.copy(), symbol)
 
-        # Generate plot
-        plot = strategy.plot_backtest(backtest_results, symbol)
+        # Generate strategy plot
+        strategy_plot = strategy.plot_backtest(backtest_results, symbol)
+        strategy_plot_path = f"backtest_results_{symbol}.png"
+        strategy_plot.savefig(strategy_plot_path)
+        plt.close()
 
-        # Save plot
-        plot_path = f"backtest_results_{symbol}.png"
-        plot.savefig(plot_path)
+        # Generate balance chart
+        balance_plot = strategy.plot_balance_chart()
+        balance_plot_path = f"balance_chart_{symbol}.png"
+        balance_plot.savefig(balance_plot_path)
         plt.close()
 
         # Generate report
@@ -195,7 +197,8 @@ async def run_backtest(
             "status": "success",
             "symbol": symbol,
             "report": report,
-            "plot_path": plot_path
+            "strategy_plot": strategy_plot_path,
+            "balance_plot": balance_plot_path
         }
 
     except Exception as e:

@@ -48,6 +48,11 @@ This service provides access to 15-minute historical stock data and implements a
 ### Backtest Endpoint
 - `GET /backtest/{symbol}`: Run backtest analysis for a specific stock
 
+# Examples:
+GET /backtest/AAPL?balance_interval=daily
+GET /backtest/AAPL?balance_interval=weekly
+GET /backtest/AAPL?balance_interval=monthly
+
 ## Key Components
 
 ### HighBreakoutStrategy Class

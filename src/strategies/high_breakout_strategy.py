@@ -1,11 +1,11 @@
 # src/strategies/high_breakout_strategy.py
-import pandas as pd
-import numpy as np  # Correct import
-from typing import Dict, List, Tuple
-import matplotlib.pyplot as plt
-from dataclasses import dataclass
-from datetime import datetime, timedelta
 import logging
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Dict, List
+
+import matplotlib.pyplot as plt
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +62,142 @@ class HighBreakoutStrategy:
         self.current_trade = None
         self.trailing_sl_pct = 0.02  # 2% trailing stop loss
         self.target_pct = 0.05  # 5% target for partial exit
+
+    def plot_balance_chart(self, interval='daily') -> plt.Figure:
+        """
+        Generate a line chart showing balance progression over time
+
+        Args:
+            interval (str): 'daily', 'weekly', or 'monthly'
+        """
+        try:
+            # Sort trades by entry date
+            sorted_trades = sorted(self.trades, key=lambda x: x.entry_date)
+            if not sorted_trades:
+                return None
+
+            # Initialize balance tracking
+            balances = {}
+            running_balance = self.initial_capital
+
+            # Record initial balance at start date
+            start_date = sorted_trades[0].entry_date
+            balances[start_date] = running_balance
+
+            # Track all events (trades and partial exits) chronologically
+            all_events = []
+
+            for trade in sorted_trades:
+                # Add partial exits
+                for partial_exit in trade.partial_exits:
+                    partial_pnl = (partial_exit['price'] - trade.entry_price) * partial_exit['quantity']
+                    all_events.append({
+                        'date': partial_exit['date'],
+                        'pnl': partial_pnl
+                    })
+
+                # Add final trade exit
+                if trade.exit_date and trade.exit_price:
+                    remaining_quantity = trade.quantity - sum(exit['quantity'] for exit in trade.partial_exits)
+                    final_pnl = (trade.exit_price - trade.entry_price) * remaining_quantity
+                    all_events.append({
+                        'date': trade.exit_date,
+                        'pnl': final_pnl
+                    })
+
+            # Sort events chronologically
+            all_events.sort(key=lambda x: x['date'])
+
+            # Calculate balances for each day
+            for event in all_events:
+                running_balance += event['pnl']
+                balances[event['date']] = running_balance
+
+            # Convert to DataFrame
+            df = pd.DataFrame(list({'date': date, 'balance': balance}
+                                   for date, balance in balances.items()))
+            df['date'] = pd.to_datetime(df['date'])
+            df.set_index('date', inplace=True)
+            df.sort_index(inplace=True)
+
+            # Resample based on interval
+            if interval == 'weekly':
+                df = df.resample('W').last().fillna(method='ffill')
+            elif interval == 'monthly':
+                df = df.resample('M').last().fillna(method='ffill')
+
+            # Create the plot
+            plt.figure(figsize=(15, 8))
+
+            # Plot line chart
+            plt.plot(df.index, df['balance'],
+                     color='blue',
+                     linewidth=2,
+                     marker='o',  # Add markers at each point
+                     markersize=4)
+
+            # Customize the plot
+            plt.title(f'Account Balance Progression ({interval.capitalize()})',
+                      fontsize=14,
+                      pad=20)
+            plt.ylabel('Balance ($)', fontsize=12)
+            plt.xlabel('Date', fontsize=12)
+
+            # Format y-axis labels as currency
+            plt.gca().yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'${x:,.0f}'))
+
+            # Rotate x-axis labels
+            plt.xticks(rotation=45)
+
+            # Add grid for better readability
+            plt.grid(True, linestyle='--', alpha=0.7)
+
+            # Calculate and show key metrics
+            initial_balance = df['balance'].iloc[0]
+            final_balance = df['balance'].iloc[-1]
+            total_return = ((final_balance - initial_balance) / initial_balance) * 100
+
+            # Add annotations for min and max values
+            min_balance = df['balance'].min()
+            max_balance = df['balance'].max()
+            min_date = df[df['balance'] == min_balance].index[0]
+            max_date = df[df['balance'] == max_balance].index[0]
+
+            # Add min/max annotations
+            plt.annotate(f'Min: ${min_balance:,.0f}',
+                         xy=(min_date, min_balance),
+                         xytext=(10, -20),
+                         textcoords='offset points',
+                         ha='left',
+                         va='top',
+                         bbox=dict(facecolor='white', edgecolor='none', alpha=0.7))
+
+            plt.annotate(f'Max: ${max_balance:,.0f}',
+                         xy=(max_date, max_balance),
+                         xytext=(10, 20),
+                         textcoords='offset points',
+                         ha='left',
+                         va='bottom',
+                         bbox=dict(facecolor='white', edgecolor='none', alpha=0.7))
+
+            # Add total return
+            plt.figtext(0.99, 0.01,
+                        f'Total Return: {total_return:,.2f}%\n' +
+                        f'Initial: ${initial_balance:,.0f}\n' +
+                        f'Final: ${final_balance:,.0f}',
+                        ha='right',
+                        va='bottom',
+                        fontsize=10,
+                        bbox=dict(facecolor='white', edgecolor='none', alpha=0.7))
+
+            # Adjust layout
+            plt.tight_layout()
+
+            return plt.gcf()
+
+        except Exception as e:
+            logger.error(f"Error in plotting balance progression: {str(e)}")
+            raise
 
     def calculate_52week_high(self, df: pd.DataFrame) -> pd.Series:
         """Calculate 52-week high for each point"""
