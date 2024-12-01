@@ -1,21 +1,18 @@
 # src/main.py
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
+import concurrent.futures
 import logging
-from pathlib import Path
+from contextlib import asynccontextmanager
+from typing import Optional
 
+import pandas as pd
+import uvicorn
+from fastapi import FastAPI, HTTPException
 from matplotlib import pyplot as plt
+from starlette.middleware.cors import CORSMiddleware
 
 from data.data_processor import StockDataProcessor
 from data.stock_list import STOCKS
-from typing import Optional, List
-import pandas as pd
-import uvicorn
-import concurrent.futures
-
-#from src.strategies.high_breakout_strategy import HighBreakoutStrategy
-from src.strategies.breakout_strategy import ModifiedBreakoutStrategy
+from src.strategies.breakout_strategy import BreakoutStrategy
 
 # Configure logging
 logging.basicConfig(
@@ -174,7 +171,7 @@ async def run_backtest(
             raise HTTPException(status_code=404, detail=f"No data found for {symbol}")
 
         # Initialize strategy
-        strategy = ModifiedBreakoutStrategy(initial_capital=initial_capital)
+        strategy = BreakoutStrategy(initial_capital=initial_capital)
 
         # Run backtest
         backtest_results = strategy.backtest(data.copy(), symbol)

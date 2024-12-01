@@ -65,7 +65,7 @@ class Trade:
         return total_pnl
 
 
-class ModifiedBreakoutStrategy:
+class BreakoutStrategy:
     def __init__(self, initial_capital: float = 100000):
         self.initial_capital = initial_capital
         self.capital = initial_capital
@@ -206,7 +206,8 @@ class ModifiedBreakoutStrategy:
             logger.error(f"Error in plotting balance progression: {str(e)}")
             raise
 
-    def is_uptrend(self, df: pd.DataFrame, current_idx: int) -> bool:
+    @staticmethod
+    def is_uptrend(df: pd.DataFrame, current_idx: int) -> bool:
         """
         Determine if stock is in uptrend using 20-period EMA
         """
@@ -217,6 +218,7 @@ class ModifiedBreakoutStrategy:
         ema_20 = df['close'].ewm(span=20, adjust=False).mean().iloc[current_idx]
         return current_price > ema_20
 
+    @staticmethod
     def is_same_day(self, date1: datetime, date2: datetime) -> bool:
         """Check if two dates are on the same trading day"""
         return date1.date() == date2.date()
