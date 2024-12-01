@@ -44,8 +44,6 @@ This service provides access to 15-minute historical stock data and implements a
 - `GET /stocks/{symbol}`: Get historical data for a specific stock
 - `GET /cache/status`: Check cache status
 - `GET /health`: Service health check
-
-### Backtest Endpoint
 - `GET /backtest/{symbol}`: Run backtest analysis for a specific stock
 
 # Examples:

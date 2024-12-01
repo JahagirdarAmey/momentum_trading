@@ -14,7 +14,8 @@ import pandas as pd
 import uvicorn
 import concurrent.futures
 
-from src.strategies.high_breakout_strategy import HighBreakoutStrategy
+#from src.strategies.high_breakout_strategy import HighBreakoutStrategy
+from src.strategies.breakout_strategy import ModifiedBreakoutStrategy
 
 # Configure logging
 logging.basicConfig(
@@ -173,7 +174,7 @@ async def run_backtest(
             raise HTTPException(status_code=404, detail=f"No data found for {symbol}")
 
         # Initialize strategy
-        strategy = HighBreakoutStrategy(initial_capital=initial_capital)
+        strategy = ModifiedBreakoutStrategy(initial_capital=initial_capital)
 
         # Run backtest
         backtest_results = strategy.backtest(data.copy(), symbol)

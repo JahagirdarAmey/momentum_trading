@@ -1,4 +1,3 @@
-# src/strategies/high_breakout_strategy.py
 import logging
 from dataclasses import dataclass
 from datetime import datetime
@@ -49,19 +48,31 @@ class Trade:
         return delta.days * 24 * 60 + delta.seconds // 60
 
     def pnl(self) -> float:
-        if not self.exit_price:
-            return 0
-        return (self.exit_price - self.entry_price) * self.quantity
+        """Calculate total PnL including partial exits"""
+        total_pnl = 0
+
+        # Add PnL from partial exits
+        for exit in self.partial_exits:
+            exit_pnl = (exit['price'] - self.entry_price) * exit['quantity']
+            total_pnl += exit_pnl
+
+        # Add PnL from final exit if exists
+        if self.exit_price:
+            remaining_quantity = self.quantity - sum(exit['quantity'] for exit in self.partial_exits)
+            final_pnl = (self.exit_price - self.entry_price) * remaining_quantity
+            total_pnl += final_pnl
+
+        return total_pnl
 
 
-class HighBreakoutStrategy:
+class ModifiedBreakoutStrategy:
     def __init__(self, initial_capital: float = 100000):
         self.initial_capital = initial_capital
         self.capital = initial_capital
         self.trades: List[Trade] = []
         self.current_trade = None
-        self.trailing_sl_pct = 0.02  # 2% trailing stop loss
-        self.target_pct = 0.05  # 5% target for partial exit
+        self.first_target_pct = 0.05  # 5% target for first partial exit
+        self.second_target_pct = 0.10  # 10% target for second partial exit
 
     def plot_balance_chart(self, interval='daily') -> plt.Figure:
         """
@@ -133,7 +144,7 @@ class HighBreakoutStrategy:
             plt.plot(df.index, df['balance'],
                      color='blue',
                      linewidth=2,
-                     marker='o',  # Add markers at each point
+                     marker='o',
                      markersize=4)
 
             # Customize the plot
@@ -163,7 +174,6 @@ class HighBreakoutStrategy:
             min_date = df[df['balance'] == min_balance].index[0]
             max_date = df[df['balance'] == max_balance].index[0]
 
-            # Add min/max annotations
             plt.annotate(f'Min: ${min_balance:,.0f}',
                          xy=(min_date, min_balance),
                          xytext=(10, -20),
@@ -180,7 +190,6 @@ class HighBreakoutStrategy:
                          va='bottom',
                          bbox=dict(facecolor='white', edgecolor='none', alpha=0.7))
 
-            # Add total return
             plt.figtext(0.99, 0.01,
                         f'Total Return: {total_return:,.2f}%\n' +
                         f'Initial: ${initial_balance:,.0f}\n' +
@@ -190,22 +199,27 @@ class HighBreakoutStrategy:
                         fontsize=10,
                         bbox=dict(facecolor='white', edgecolor='none', alpha=0.7))
 
-            # Adjust layout
             plt.tight_layout()
-
             return plt.gcf()
 
         except Exception as e:
             logger.error(f"Error in plotting balance progression: {str(e)}")
             raise
 
-    def calculate_52week_high(self, df: pd.DataFrame) -> pd.Series:
-        """Calculate 52-week high for each point"""
-        # Assuming 15-minute data with market hours 9:15 AM to 3:30 PM (6.25 hours)
-        # 6.25 hours * 4 (15-min periods per hour) = 25 periods per day
-        periods_per_day = 25
-        window = 252 * periods_per_day  # 252 trading days
-        return df['high'].rolling(window=window).max()
+    def is_uptrend(self, df: pd.DataFrame, current_idx: int) -> bool:
+        """
+        Determine if stock is in uptrend using 20-period EMA
+        """
+        if current_idx < 20:  # Not enough data
+            return False
+
+        current_price = df.iloc[current_idx]['close']
+        ema_20 = df['close'].ewm(span=20, adjust=False).mean().iloc[current_idx]
+        return current_price > ema_20
+
+    def is_same_day(self, date1: datetime, date2: datetime) -> bool:
+        """Check if two dates are on the same trading day"""
+        return date1.date() == date2.date()
 
     def backtest(self, df: pd.DataFrame, symbol: str) -> pd.DataFrame:
         """Run backtest on the data"""
@@ -215,19 +229,23 @@ class HighBreakoutStrategy:
                 df = df.reset_index()
 
             # Calculate 52-week high
-            df['52_week_high'] = self.calculate_52week_high(df)
+            window = 252 * 25  # 252 trading days * 25 periods per day
+            df['52_week_high'] = df['high'].rolling(window=window).max()
+
+            # Calculate 20 EMA for trend
+            df['ema_20'] = df['close'].ewm(span=20, adjust=False).mean()
 
             # Initialize columns for signals
             df['buy_signal'] = False
             df['sell_signal'] = False
-            df['trailing_sl'] = None
-            df['partial_exit'] = False
+            df['first_target_exit'] = False
+            df['second_target_exit'] = False
 
             position_size = 0
-            stop_loss = 0
 
             for i in range(1, len(df)):
                 current_price = df.iloc[i]['close']
+                current_date = df.iloc[i]['date']
 
                 if self.current_trade is None:
                     # Check for buy signal
@@ -237,48 +255,58 @@ class HighBreakoutStrategy:
                         if quantity > 0:
                             self.current_trade = Trade(
                                 symbol=symbol,
-                                entry_date=df.iloc[i]['date'],
+                                entry_date=current_date,
                                 entry_price=current_price,
                                 quantity=quantity
                             )
                             df.loc[i, 'buy_signal'] = True
-                            stop_loss = current_price * (1 - self.trailing_sl_pct)
                             position_size = quantity
 
                 else:
-                    # Check for partial exit at 5% profit
-                    target_price = self.current_trade.entry_price * (1 + self.target_pct)
-                    if not self.current_trade.partial_exits and current_price >= target_price:
-                        # Exit half position
-                        exit_quantity = position_size // 2
+                    # Skip if same day as entry
+                    if self.is_same_day(current_date, self.current_trade.entry_date):
+                        continue
+
+                    remaining_quantity = self.current_trade.quantity - sum(
+                        exit['quantity'] for exit in self.current_trade.partial_exits
+                    )
+
+                    # Check for first target (5%)
+                    first_target = self.current_trade.entry_price * (1 + self.first_target_pct)
+                    if not self.current_trade.partial_exits and current_price >= first_target:
+                        exit_quantity = remaining_quantity // 2
                         self.current_trade.partial_exits.append({
-                            'date': df.iloc[i]['date'],
+                            'date': current_date,
                             'price': current_price,
-                            'quantity': exit_quantity
+                            'quantity': exit_quantity,
+                            'target': 'first'
                         })
-                        position_size -= exit_quantity
-                        df.loc[i, 'partial_exit'] = True
+                        df.loc[i, 'first_target_exit'] = True
+                        remaining_quantity -= exit_quantity
 
-                        # Update trailing stop loss
-                        stop_loss = max(stop_loss, current_price * (1 - self.trailing_sl_pct))
+                    # Check for second target (10%)
+                    second_target = self.current_trade.entry_price * (1 + self.second_target_pct)
+                    if len(self.current_trade.partial_exits) == 1 and current_price >= second_target:
+                        exit_quantity = remaining_quantity // 2
+                        self.current_trade.partial_exits.append({
+                            'date': current_date,
+                            'price': current_price,
+                            'quantity': exit_quantity,
+                            'target': 'second'
+                        })
+                        df.loc[i, 'second_target_exit'] = True
+                        remaining_quantity -= exit_quantity
 
-                    # Check trailing stop loss
-                    if current_price <= stop_loss:
-                        # Exit remaining position
-                        self.current_trade.exit_date = df.iloc[i]['date']
+                    # For remaining position, check trend
+                    if not self.is_uptrend(df, i) and remaining_quantity > 0:
+                        self.current_trade.exit_date = current_date
                         self.current_trade.exit_price = current_price
-                        self.current_trade.exit_reason = 'Stop Loss'
+                        self.current_trade.exit_reason = 'Trend Reversal'
                         df.loc[i, 'sell_signal'] = True
 
                         self.trades.append(self.current_trade)
                         self.current_trade = None
                         position_size = 0
-                    else:
-                        # Update trailing stop loss
-                        new_stop_loss = current_price * (1 - self.trailing_sl_pct)
-                        stop_loss = max(stop_loss, new_stop_loss)
-
-                    df.loc[i, 'trailing_sl'] = stop_loss
 
             return df
 
@@ -286,16 +314,16 @@ class HighBreakoutStrategy:
             logger.error(f"Error in backtest: {str(e)}")
             raise
 
-
     @staticmethod
     def plot_backtest(df: pd.DataFrame, symbol: str):
         """Plot backtest results"""
         try:
             plt.figure(figsize=(15, 10))
 
-            # Plot price and 52-week high
+            # Plot price, 52-week high, and 20 EMA
             plt.plot(df['date'], df['close'], label='Price', alpha=0.7)
             plt.plot(df['date'], df['52_week_high'], label='52-week High', alpha=0.5)
+            plt.plot(df['date'], df['ema_20'], label='20 EMA', alpha=0.5, linestyle='--')
 
             # Plot buy signals
             buy_signals = df[df['buy_signal']]
@@ -303,17 +331,23 @@ class HighBreakoutStrategy:
                 plt.scatter(buy_signals['date'], buy_signals['close'],
                             marker='^', color='g', label='Buy Signal', s=100)
 
-            # Plot sell signals
+            # Plot first target exits
+            first_exits = df[df['first_target_exit']]
+            if not first_exits.empty:
+                plt.scatter(first_exits['date'], first_exits['close'],
+                            marker='s', color='orange', label='5% Exit', s=100)
+
+            # Plot second target exits
+            second_exits = df[df['second_target_exit']]
+            if not second_exits.empty:
+                plt.scatter(second_exits['date'], second_exits['close'],
+                            marker='d', color='blue', label='10% Exit', s=100)
+
+            # Plot final exits
             sell_signals = df[df['sell_signal']]
             if not sell_signals.empty:
                 plt.scatter(sell_signals['date'], sell_signals['close'],
-                            marker='v', color='r', label='Sell Signal', s=100)
-
-            # Plot partial exits
-            partial_exits = df[df['partial_exit']]
-            if not partial_exits.empty:
-                plt.scatter(partial_exits['date'], partial_exits['close'],
-                            marker='o', color='orange', label='Partial Exit', s=100)
+                            marker='v', color='r', label='Final Exit', s=100)
 
             plt.title(f'Backtest Results for {symbol}')
             plt.xlabel('Date')
