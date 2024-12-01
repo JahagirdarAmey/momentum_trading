@@ -468,7 +468,7 @@ class BreakoutStrategy:
             raise
 
     def generate_report(self) -> Dict:
-        """Generate backtest report"""
+        """Generate backtest report with annualized returns"""
         try:
             if not self.trades:
                 return {"error": "No trades found"}
@@ -476,6 +476,21 @@ class BreakoutStrategy:
             total_trades = len(self.trades)
             profitable_trades = len([t for t in self.trades if t.pnl() > 0])
             total_pnl = sum(t.pnl() for t in self.trades)
+
+            # Calculate total returns percentage
+            total_return_pct = (total_pnl / self.initial_capital) * 100
+
+            # Calculate time period
+            start_date = self.trades[0].entry_date
+            end_date = self.trades[-1].exit_date
+            trading_days = (end_date - start_date).total_seconds() / (24 * 60 * 60)
+            years = trading_days / 365.25
+
+            # Calculate annualized return
+            if years > 0:
+                annualized_return = ((1 + (total_return_pct / 100)) ** (1 / years) - 1) * 100
+            else:
+                annualized_return = 0
 
             # Calculate holding periods
             holding_periods = [t.holding_period_minutes() for t in self.trades if t.exit_date]
@@ -497,7 +512,9 @@ class BreakoutStrategy:
                 "summary": {
                     "initial_capital": self.initial_capital,
                     "final_capital": self.initial_capital + total_pnl,
-                    "total_return": (total_pnl / self.initial_capital) * 100,
+                    "total_return_pct": total_return_pct,
+                    "trading_period_days": trading_days,
+                    "annualized_return_pct": annualized_return,
                     "total_trades": total_trades,
                     "profitable_trades": profitable_trades,
                     "win_rate": (profitable_trades / total_trades) * 100 if total_trades > 0 else 0,
@@ -538,11 +555,12 @@ class BreakoutStrategy:
                     for t in self.trades
                 ],
                 "trade_stats": {
-                    "max_profit_trade": max(self.trades, key=lambda t: t.pnl() if t.exit_price else 0).pnl(),
-                    "max_loss_trade": min(self.trades, key=lambda t: t.pnl() if t.exit_price else 0).pnl(),
+                    "max_profit_trade": max(t.pnl() for t in self.trades) if self.trades else 0,
+                    "max_loss_trade": min(t.pnl() for t in self.trades) if self.trades else 0,
                     "avg_profit_per_trade": total_pnl / total_trades if total_trades > 0 else 0,
-                    "longest_trade": max(self.trades, key=lambda t: t.holding_period_minutes()).holding_period_str(),
-                    "shortest_trade": min(self.trades, key=lambda t: t.holding_period_minutes()).holding_period_str(),
+                    "avg_return_per_trade_pct": total_return_pct / total_trades if total_trades > 0 else 0,
+                    "longest_trade": max([t.holding_period_str() for t in self.trades]) if self.trades else "0",
+                    "shortest_trade": min([t.holding_period_str() for t in self.trades]) if self.trades else "0"
                 }
             }
 
