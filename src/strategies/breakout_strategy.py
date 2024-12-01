@@ -73,15 +73,21 @@ class BreakoutStrategy:
         self.current_trade = None
         self.lookback_period = 20  # For volatility calculation
         self.risk_percent = 0.01  # 1% risk per trade
-        self.max_holding_days = 5  # Maximum holding period
+        self.max_holding_days = 7  # Extended from 5 to 7 days
         self.rsi_period = 14  # RSI period for trend confirmation
 
-        # Profit levels
-        self.first_target_pct = 0.02  # 2% for first partial exit
-        self.second_target_pct = 0.03  # 3% for second partial exit
-        self.final_target_pct = 0.05  # 5% for final exit
-        self.partial_exit_pct = 0.33  # Exit 33% at each target
-        self.stop_loss_pct = 0.02  # 2% stop loss
+        # Modified profit targets
+        self.first_target_pct = 0.015  # 1.5% for first exit
+        self.second_target_pct = 0.03  # 3% for second exit
+        self.final_target_pct = 0.045  # 4.5% for final exit
+        self.partial_exit_pct = 0.40  # 40% size for first exit
+        self.stop_loss_pct = 0.018  # 1.8% stop loss
+
+        # Trend confirmation parameters
+        self.ema_short = 10  # Faster EMA for quick moves
+        self.ema_long = 21  # Slower EMA for trend
+        self.rsi_oversold = 40  # RSI levels
+        self.rsi_overbought = 60
 
     @staticmethod
     def calculate_rsi(df: pd.DataFrame, period: int = 14) -> pd.Series:
@@ -278,12 +284,14 @@ class BreakoutStrategy:
             window = 252 * 25  # 52-week high
             df['52_week_high'] = df['high'].rolling(window=window).max()
 
-            # Calculate multiple EMAs for trend confirmation
-            df['ema_20'] = df['close'].ewm(span=20, adjust=False).mean()
-            df['ema_50'] = df['close'].ewm(span=50, adjust=False).mean()
-
-            # Calculate RSI
+            # EMAs and RSI
+            df['ema_short'] = df['close'].ewm(span=self.ema_short, adjust=False).mean()
+            df['ema_long'] = df['close'].ewm(span=self.ema_long, adjust=False).mean()
             df['rsi'] = self.calculate_rsi(df, self.rsi_period)
+
+            # Calculate volume metrics
+            df['volume_sma'] = df['volume'].rolling(window=20).mean()
+            df['volume_ratio'] = df['volume'] / df['volume_sma']
 
             # Initialize columns
             df['buy_signal'] = False
@@ -297,8 +305,6 @@ class BreakoutStrategy:
             df['final_target_price'] = None
 
             position_size = 0
-            entry_time = None
-            remaining_quantity = 0
 
             for i in range(1, len(df)):
                 current_row = df.iloc[i]
@@ -306,15 +312,13 @@ class BreakoutStrategy:
                 current_date = current_row['date']
 
                 if self.current_trade is None:
-                    # Entry conditions:
-                    # 1. Price breaks 52-week high
-                    # 2. Strong trend (price > EMA20 > EMA50)
-                    # 3. RSI > 50 (bullish momentum)
+                    # Entry conditions
                     if (current_price > df.iloc[i - 1]['52_week_high'] and
-                            current_price > current_row['ema_20'] > current_row['ema_50'] and
-                            current_row['rsi'] > 50):
+                            current_row['ema_short'] > current_row['ema_long'] and
+                            self.rsi_oversold < current_row['rsi'] < self.rsi_overbought and
+                            current_row['volume_ratio'] > 1.2):
 
-                        quantity = int(self.capital * 0.1 / current_price)  # Use 10% of capital
+                        quantity = int(self.capital * 0.15 / current_price)  # 15% position size
                         if quantity > 0:
                             self.current_trade = Trade(
                                 symbol=symbol,
@@ -322,8 +326,6 @@ class BreakoutStrategy:
                                 entry_price=current_price,
                                 quantity=quantity
                             )
-                            remaining_quantity = quantity
-                            entry_time = current_date
 
                             # Set price levels
                             stop_loss_price = current_price * (1 - self.stop_loss_pct)
@@ -336,15 +338,18 @@ class BreakoutStrategy:
                             df.loc[i:, 'second_target_price'] = second_target
                             df.loc[i:, 'final_target_price'] = final_target
                             df.loc[i, 'buy_signal'] = True
+                            position_size = quantity
 
                 else:
                     # Skip same day entries
                     if current_date.date() == self.current_trade.entry_date.date():
                         continue
 
-                    time_passed = (current_date - entry_time).total_seconds() / (24 * 60 * 60)  # days
+                    # Calculate holding time
+                    time_held = current_date - self.current_trade.entry_date
+                    days_held = time_held.total_seconds() / (24 * 60 * 60)
 
-                    # Check first partial target (2%)
+                    # Check first partial target (1.5%)
                     if (current_price >= df.iloc[i]['first_target_price'] and
                             not any(exit.get('target') == 'first' for exit in self.current_trade.partial_exits)):
                         exit_quantity = int(self.current_trade.quantity * self.partial_exit_pct)
@@ -354,23 +359,24 @@ class BreakoutStrategy:
                             'quantity': exit_quantity,
                             'target': 'first'
                         })
-                        remaining_quantity -= exit_quantity
+                        position_size -= exit_quantity
                         df.loc[i, 'profit_target_exit'] = True
 
                     # Check second partial target (3%)
                     elif (current_price >= df.iloc[i]['second_target_price'] and
                           not any(exit.get('target') == 'second' for exit in self.current_trade.partial_exits)):
-                        exit_quantity = int(self.current_trade.quantity * self.partial_exit_pct)
+                        exit_quantity = int((self.current_trade.quantity - sum(
+                            exit['quantity'] for exit in self.current_trade.partial_exits)) * 0.5)
                         self.current_trade.partial_exits.append({
                             'date': current_date,
                             'price': current_price,
                             'quantity': exit_quantity,
                             'target': 'second'
                         })
-                        remaining_quantity -= exit_quantity
+                        position_size -= exit_quantity
                         df.loc[i, 'profit_target_exit'] = True
 
-                    # Check final target (5%)
+                    # Check final target (4.5%)
                     if current_price >= df.iloc[i]['final_target_price']:
                         self.current_trade.exit_date = current_date
                         self.current_trade.exit_price = current_price
@@ -379,9 +385,10 @@ class BreakoutStrategy:
                         df.loc[i, 'sell_signal'] = True
                         self.trades.append(self.current_trade)
                         self.current_trade = None
+                        position_size = 0
                         continue
 
-                    # Check stop loss
+                    # Check stop loss (1.8%)
                     if current_price <= df.iloc[i]['stop_loss_price']:
                         self.current_trade.exit_date = current_date
                         self.current_trade.exit_price = current_price
@@ -390,10 +397,11 @@ class BreakoutStrategy:
                         df.loc[i, 'sell_signal'] = True
                         self.trades.append(self.current_trade)
                         self.current_trade = None
+                        position_size = 0
                         continue
 
-                    # Time-based exit (5 days)
-                    if time_passed >= self.max_holding_days:
+                    # Time-based exit (7 days)
+                    if days_held >= self.max_holding_days:
                         self.current_trade.exit_date = current_date
                         self.current_trade.exit_price = current_price
                         self.current_trade.exit_reason = 'Time Exit'
@@ -401,6 +409,7 @@ class BreakoutStrategy:
                         df.loc[i, 'sell_signal'] = True
                         self.trades.append(self.current_trade)
                         self.current_trade = None
+                        position_size = 0
 
             return df
 
@@ -417,8 +426,8 @@ class BreakoutStrategy:
             # Plot price and EMAs
             plt.plot(df['date'], df['close'], label='Price', alpha=0.7)
             plt.plot(df['date'], df['52_week_high'], label='52-week High', alpha=0.5)
-            plt.plot(df['date'], df['ema_20'], label='20 EMA', alpha=0.5, linestyle='--')
-            plt.plot(df['date'], df['ema_50'], label='50 EMA', alpha=0.5, linestyle='--')
+            plt.plot(df['date'], df['ema_short'], label='EMA10', alpha=0.5, linestyle='--')
+            plt.plot(df['date'], df['ema_long'], label='EMA21', alpha=0.5, linestyle='--')
 
             # Plot buy signals
             buy_signals = df[df['buy_signal']]
@@ -430,21 +439,21 @@ class BreakoutStrategy:
             profit_exits = df[df['profit_target_exit']]
             if not profit_exits.empty:
                 plt.scatter(profit_exits['date'], profit_exits['close'],
-                            marker='s', color='blue', label='Profit Target Exit', s=100)
+                            marker='s', color='blue', label='Profit Exit', s=100)
 
             # Plot stop loss exits
             stop_loss_exits = df[df['stop_loss_exit']]
             if not stop_loss_exits.empty:
                 plt.scatter(stop_loss_exits['date'], stop_loss_exits['close'],
-                            marker='v', color='r', label='Stop Loss Exit', s=100)
+                            marker='v', color='r', label='Stop Loss', s=100)
 
-            # Plot time-based exits
+            # Plot time exits
             time_exits = df[df['time_exit']]
             if not time_exits.empty:
                 plt.scatter(time_exits['date'], time_exits['close'],
                             marker='d', color='purple', label='Time Exit', s=100)
 
-            plt.title(f'Backtest Results for {symbol}\nStrategy: Multi-Target with Time Exit')
+            plt.title(f'Backtest Results for {symbol}\nStrategy: Multi-Target EMA')
             plt.xlabel('Date')
             plt.ylabel('Price')
             plt.legend()
