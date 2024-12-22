@@ -4,10 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c923b39e-586c-4917-8094-2cd6649cee29" name="Changes" comment="added account balance progression">
+    <list default="true" id="c923b39e-586c-4917-8094-2cd6649cee29" name="Changes" comment="changes in strategy  #3">
+      <change afterPath="$PROJECT_DIR$/src/strategies/trade.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/strategies/high_breakout_strategy.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/strategies/breakout_strategy.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/strategies/breakout_strategy.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/strategies/breakout_strategy.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -155,14 +156,77 @@
       <option name="project" value="LOCAL" />
       <updated>1732712601897</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="added account balance progression">
+      <option name="closed" value="true" />
+      <created>1733060658858</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1733060658858</updated>
+    </task>
+    <task id="LOCAL-00005" summary="few changes">
+      <option name="closed" value="true" />
+      <created>1733061614400</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1733061614400</updated>
+    </task>
+    <task id="LOCAL-00006" summary="removed partial profit booking">
+      <option name="closed" value="true" />
+      <created>1733063968300</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1733063968300</updated>
+    </task>
+    <task id="LOCAL-00007" summary="changes in strategy">
+      <option name="closed" value="true" />
+      <created>1733073634181</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1733073634181</updated>
+    </task>
+    <task id="LOCAL-00008" summary="changes in strategy  #2">
+      <option name="closed" value="true" />
+      <created>1733076347820</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1733076347820</updated>
+    </task>
+    <task id="LOCAL-00009" summary="changes in strategy  #3">
+      <option name="closed" value="true" />
+      <created>1733077405322</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1733077405322</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="d" />
-    <MESSAGE value="few changes" />
     <MESSAGE value="changes" />
     <MESSAGE value="added account balance progression" />
-    <option name="LAST_COMMIT_MESSAGE" value="added account balance progression" />
+    <MESSAGE value="few changes" />
+    <MESSAGE value="removed partial profit booking" />
+    <MESSAGE value="changes in strategy" />
+    <MESSAGE value="changes in strategy  #2" />
+    <MESSAGE value="changes in strategy  #3" />
+    <option name="LAST_COMMIT_MESSAGE" value="changes in strategy  #3" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/main.py</url>
+          <line>167</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
