@@ -1,4 +1,3 @@
-# src/main.py
 import concurrent.futures
 import logging
 from contextlib import asynccontextmanager

@@ -1,11 +1,7 @@
-
-import logging
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict, List
 
-import matplotlib.pyplot as plt
-import pandas as pd
 
 @dataclass
 class Trade:

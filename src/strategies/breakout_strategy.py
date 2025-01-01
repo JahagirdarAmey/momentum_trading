@@ -34,17 +34,7 @@ class BreakoutStrategy:
         # Trend confirmation parameters
         self.ema_short = 10  # Faster EMA for quick moves
         self.ema_long = 21  # Slower EMA for trend
-        self.rsi_oversold = 40  # RSI levels
-        self.rsi_overbought = 60
 
-    @staticmethod
-    def calculate_rsi(df: pd.DataFrame, period: int = 14) -> pd.Series:
-        """Calculate RSI indicator"""
-        delta = df['close'].diff()
-        gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
-        loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
-        rs = gain / loss
-        return 100 - (100 / (1 + rs))
 
     @staticmethod
     def calculate_volatility(df: pd.DataFrame, period: int) -> pd.Series:
@@ -232,10 +222,9 @@ class BreakoutStrategy:
             window = 252 * 25  # 52-week high
             df['52_week_high'] = df['high'].rolling(window=window).max()
 
-            # EMAs and RSI
+            # EMAs
             df['ema_short'] = df['close'].ewm(span=self.ema_short, adjust=False).mean()
             df['ema_long'] = df['close'].ewm(span=self.ema_long, adjust=False).mean()
-            df['rsi'] = self.calculate_rsi(df, self.rsi_period)
 
             # Calculate volume metrics
             df['volume_sma'] = df['volume'].rolling(window=20).mean()
@@ -263,7 +252,6 @@ class BreakoutStrategy:
                     # Entry conditions
                     if (current_price > df.iloc[i - 1]['52_week_high'] and
                             current_row['ema_short'] > current_row['ema_long'] and
-                            self.rsi_oversold < current_row['rsi'] < self.rsi_overbought and
                             current_row['volume_ratio'] > 1.2):
 
                         quantity = int(self.capital * 0.15 / current_price)  # 15% position size
