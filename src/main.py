@@ -203,6 +203,35 @@ async def run_backtest(
         logger.error(f"Error running backtest for {symbol}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@app.post("/portfolio/backtest")
+async def run_portfolio_backtest(
+        request: PortfolioBacktestRequest
+):
+    """Run portfolio-wide backtest"""
+    try:
+        backtest = PortfolioBacktest(
+            symbols=request.symbols,
+            start_date=request.start_date,
+            end_date=request.end_date,
+            initial_capital=request.initial_capital
+        )
+
+        results = backtest.run_simulation()
+
+        # Generate plots
+        portfolio_plots = generate_portfolio_plots(results)
+
+        return {
+            "status": "success",
+            "results": results,
+            "plots": portfolio_plots
+        }
+
+    except Exception as e:
+        logger.error(f"Portfolio backtest error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
