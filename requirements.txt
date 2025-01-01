@@ -2,7 +2,3 @@ fastapi
 uvicorn
 pandas
 matplotlib
-logging~=0.4.9.6
-pytz~=2024.2
-starlette~=0.41.3
-numpy~=1.26.2
