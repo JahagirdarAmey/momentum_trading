@@ -69,6 +69,7 @@ stateDiagram-v2
         Entry Conditions:
         - Price > 52-week High
         - EMA Short > EMA Long
+        - RSI between 40-60
         - Volume > 1.2x Avg
     end note
     
@@ -84,6 +85,7 @@ stateDiagram-v2
 
 - Price breaks above 52-week high
 - Short EMA (10) above Long EMA (21)
+- RSI between 40-60 (neutral zone)
 - Volume > 1.2x average volume
 
 
