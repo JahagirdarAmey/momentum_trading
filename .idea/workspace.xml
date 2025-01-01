@@ -4,12 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c923b39e-586c-4917-8094-2cd6649cee29" name="Changes" comment="Documentation">
-      <change afterPath="$PROJECT_DIR$/src/strategies/portfolio_backtest.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/strategies/portfolio_manager.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/strategies/position.py" afterDir="false" />
+    <list default="true" id="c923b39e-586c-4917-8094-2cd6649cee29" name="Changes" comment="changes in strategy  #3">
+      <change afterPath="$PROJECT_DIR$/src/strategies/trade.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/strategies/breakout_strategy.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/strategies/breakout_strategy.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -205,15 +204,7 @@
       <option name="project" value="LOCAL" />
       <updated>1733077405322</updated>
     </task>
-    <task id="LOCAL-00010" summary="Documentation">
-      <option name="closed" value="true" />
-      <created>1734875113658</created>
-      <option name="number" value="00010" />
-      <option name="presentableId" value="LOCAL-00010" />
-      <option name="project" value="LOCAL" />
-      <updated>1734875113658</updated>
-    </task>
-    <option name="localTasksCounter" value="11" />
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -225,8 +216,7 @@
     <MESSAGE value="changes in strategy" />
     <MESSAGE value="changes in strategy  #2" />
     <MESSAGE value="changes in strategy  #3" />
-    <MESSAGE value="Documentation" />
-    <option name="LAST_COMMIT_MESSAGE" value="Documentation" />
+    <option name="LAST_COMMIT_MESSAGE" value="changes in strategy  #3" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
