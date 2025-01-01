@@ -21,14 +21,9 @@ class BreakoutStrategy:
         self.current_trade = None
         self.lookback_period = 20  # For volatility calculation
         self.risk_percent = 0.01  # 1% risk per trade
-        self.max_holding_days = 7  # Extended from 5 to 7 days
 
-        # Modified profit targets
-        self.first_target_pct = 0.015  # 1.5% for first exit
-        self.second_target_pct = 0.03  # 3% for second exit
-        self.final_target_pct = 0.045  # 4.5% for final exit
-        self.partial_exit_pct = 0.40  # 40% size for first exit
-        self.stop_loss_pct = 0.018  # 1.8% stop loss
+        # Modified target
+        self.profit_target_pct = 0.02  # 2% profit target
 
         # Trend confirmation parameters
         self.ema_short = 10  # Faster EMA for quick moves
@@ -212,7 +207,7 @@ class BreakoutStrategy:
         return current_price > ema_20
 
     def backtest(self, df: pd.DataFrame, symbol: str) -> pd.DataFrame:
-        """Run backtest with long-only positions and no re-entries while holding"""
+        """Run backtest with long-only positions and 2% profit target"""
         try:
             if isinstance(df.index, pd.DatetimeIndex):
                 df = df.reset_index()
@@ -233,11 +228,8 @@ class BreakoutStrategy:
             df['buy_signal'] = False
             df['sell_signal'] = False
             df['profit_target_exit'] = False
-            df['time_exit'] = False
             df['target_price'] = None
-            df['in_position'] = False  # Track if we're holding a position
-
-            max_holding_days = 90  # 3 months
+            df['in_position'] = False
 
             for i in range(1, len(df)):
                 current_row = df.iloc[i]
@@ -263,33 +255,18 @@ class BreakoutStrategy:
                                 quantity=quantity
                             )
 
-                            # Set target price (4% profit)
-                            target_price = current_price * 1.04
+                            # Set target price
+                            target_price = current_price * (1 + self.profit_target_pct)  # 2% profit target
                             df.loc[i:, 'target_price'] = target_price
                             df.loc[i, 'buy_signal'] = True
 
                 elif self.current_trade is not None:
-                    # Calculate holding time
-                    time_held = current_date - self.current_trade.entry_date
-                    days_held = time_held.total_seconds() / (24 * 60 * 60)
-
-                    # Check profit target (4%)
+                    # Check profit target (2%)
                     if current_price >= df.iloc[i]['target_price']:
                         self.current_trade.exit_date = current_date
                         self.current_trade.exit_price = current_price
                         self.current_trade.exit_reason = 'Profit Target'
                         df.loc[i, 'profit_target_exit'] = True
-                        df.loc[i, 'sell_signal'] = True
-                        self.trades.append(self.current_trade)
-                        self.current_trade = None
-                        continue
-
-                    # Time-based exit (3 months)
-                    if days_held >= max_holding_days:
-                        self.current_trade.exit_date = current_date
-                        self.current_trade.exit_price = current_price
-                        self.current_trade.exit_reason = 'Time Exit'
-                        df.loc[i, 'time_exit'] = True
                         df.loc[i, 'sell_signal'] = True
                         self.trades.append(self.current_trade)
                         self.current_trade = None
@@ -302,7 +279,7 @@ class BreakoutStrategy:
 
     @staticmethod
     def plot_backtest(df: pd.DataFrame, symbol: str):
-        """Plot backtest results with simplified exit conditions"""
+        """Plot backtest results"""
         try:
             plt.figure(figsize=(15, 10))
 
@@ -318,19 +295,13 @@ class BreakoutStrategy:
                 plt.scatter(buy_signals['date'], buy_signals['close'],
                             marker='^', color='g', label='Buy Signal', s=100)
 
-            # Plot profit target exits (4%)
+            # Plot profit target exits (2%)
             profit_exits = df[df['profit_target_exit']]
             if not profit_exits.empty:
                 plt.scatter(profit_exits['date'], profit_exits['close'],
-                            marker='s', color='blue', label='4% Profit Exit', s=100)
+                            marker='s', color='blue', label='2% Profit Exit', s=100)
 
-            # Plot time exits (3-month)
-            time_exits = df[df['time_exit']]
-            if not time_exits.empty:
-                plt.scatter(time_exits['date'], time_exits['close'],
-                            marker='d', color='purple', label='3-Month Exit', s=100)
-
-            plt.title(f'Backtest Results for {symbol}\nStrategy: 52-Week High Breakout with 4% Target')
+            plt.title(f'Backtest Results for {symbol}\nStrategy: 52-Week High Breakout with 2% Target')
             plt.xlabel('Date')
             plt.ylabel('Price')
             plt.legend()
