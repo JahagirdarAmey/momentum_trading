@@ -212,7 +212,7 @@ class BreakoutStrategy:
         return current_price > ema_20
 
     def backtest(self, df: pd.DataFrame, symbol: str) -> pd.DataFrame:
-        """Run backtest with simplified exit strategy: 4% profit target or 3-month hold"""
+        """Run backtest with long-only positions and no re-entries while holding"""
         try:
             if isinstance(df.index, pd.DatetimeIndex):
                 df = df.reset_index()
@@ -235,8 +235,8 @@ class BreakoutStrategy:
             df['profit_target_exit'] = False
             df['time_exit'] = False
             df['target_price'] = None
+            df['in_position'] = False  # Track if we're holding a position
 
-            position_size = 0
             max_holding_days = 90  # 3 months
 
             for i in range(1, len(df)):
@@ -244,8 +244,12 @@ class BreakoutStrategy:
                 current_price = current_row['close']
                 current_date = current_row['date']
 
-                if self.current_trade is None:
-                    # Entry conditions
+                # Update position status
+                if self.current_trade is not None:
+                    df.loc[i, 'in_position'] = True
+
+                if self.current_trade is None and not df.loc[i, 'in_position']:
+                    # Only check entry conditions if we're not in a position
                     if (current_price > df.iloc[i - 1]['52_week_high'] and
                             current_row['ema_short'] > current_row['ema_long'] and
                             current_row['volume_ratio'] > 1.2):
@@ -263,13 +267,8 @@ class BreakoutStrategy:
                             target_price = current_price * 1.04
                             df.loc[i:, 'target_price'] = target_price
                             df.loc[i, 'buy_signal'] = True
-                            position_size = quantity
 
-                else:
-                    # Skip same day entries
-                    if current_date.date() == self.current_trade.entry_date.date():
-                        continue
-
+                elif self.current_trade is not None:
                     # Calculate holding time
                     time_held = current_date - self.current_trade.entry_date
                     days_held = time_held.total_seconds() / (24 * 60 * 60)
@@ -283,7 +282,6 @@ class BreakoutStrategy:
                         df.loc[i, 'sell_signal'] = True
                         self.trades.append(self.current_trade)
                         self.current_trade = None
-                        position_size = 0
                         continue
 
                     # Time-based exit (3 months)
@@ -295,7 +293,6 @@ class BreakoutStrategy:
                         df.loc[i, 'sell_signal'] = True
                         self.trades.append(self.current_trade)
                         self.current_trade = None
-                        position_size = 0
 
             return df
 
