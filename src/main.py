@@ -6,10 +6,16 @@ from typing import Optional
 
 import pandas as pd
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from matplotlib import pyplot as plt
 from starlette.middleware.cors import CORSMiddleware
-
+import os
+import csv
+from datetime import datetime
+import concurrent.futures
+from pathlib import Path
+import pandas as pd
+from fastapi import BackgroundTasks
 from data.data_processor import StockDataProcessor
 from data.stock_list import STOCKS
 from src.strategies.breakout_strategy import BreakoutStrategy
@@ -101,6 +107,32 @@ async def list_available_stocks():
         }
     except Exception as e:
         logger.error(f"Error listing stocks: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/backtest/batch")
+async def batch_backtest(
+        background_tasks: BackgroundTasks,
+        initial_capital: float = 100000
+):
+    """Run backtest for all available stocks"""
+    try:
+        strategy = BreakoutStrategy(initial_capital=initial_capital)
+
+        # Start backtest in background
+        background_tasks.add_task(strategy.run_batch_backtest, processor, initial_capital)
+
+        return {
+            "status": "started",
+            "message": "Batch backtest started in background. Results will be saved to backtest_results directory.",
+            "results_location": {
+                "consolidated_report": "backtest_results/reports/consolidated_results.csv",
+                "charts": "backtest_results/charts",
+                "graphs": "backtest_results/graphs"
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error starting batch backtest: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

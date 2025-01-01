@@ -1,6 +1,8 @@
+import concurrent.futures
+import csv
 import logging
-from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
 from typing import Dict, List
 
 import matplotlib.pyplot as plt
@@ -21,11 +23,7 @@ class BreakoutStrategy:
         self.current_trade = None
         self.lookback_period = 20  # For volatility calculation
         self.risk_percent = 0.01  # 1% risk per trade
-
-        # Modified target
         self.profit_target_pct = 0.02  # 2% profit target
-
-        # Trend confirmation parameters
         self.ema_short = 10  # Faster EMA for quick moves
         self.ema_long = 21  # Slower EMA for trend
 
@@ -276,6 +274,114 @@ class BreakoutStrategy:
         except Exception as e:
             logger.error(f"Error in backtest: {str(e)}")
             raise
+
+    # Create necessary directories
+    def create_result_directories(self):
+        base_dir = Path("backtest_results")
+        for subdir in ["charts", "graphs", "reports"]:
+            (base_dir / subdir).mkdir(parents=True, exist_ok=True)
+        return base_dir
+
+    def run_single_backtest(self, symbol: str, processor, initial_capital: float = 100000) -> dict:
+        """Run backtest for a single symbol and save results"""
+        try:
+            # Get data
+            data = processor.get_stock_data(symbol)
+            if data is None:
+                return {"symbol": symbol, "status": "failed", "error": "No data found"}
+
+            # Run backtest
+            backtest_results = self.backtest(data.copy(), symbol)
+
+            # Generate and save strategy plot
+            strategy_plot = self.plot_backtest(backtest_results, symbol)
+            strategy_plot.savefig(f"backtest_results/graphs/strategy_{symbol}.png")
+            plt.close()
+
+            # Generate and save balance chart
+            balance_plot = self.plot_balance_chart()
+            if balance_plot:  # Check if plot was generated successfully
+                balance_plot.savefig(f"backtest_results/charts/balance_{symbol}.png")
+                plt.close()
+
+            # Generate report
+            report = self.generate_report()
+
+            return {
+                "symbol": symbol,
+                "status": "success",
+                "report": report
+            }
+        except Exception as e:
+            logger.error(f"Error in backtest for {symbol}: {str(e)}")
+            return {"symbol": symbol, "status": "failed", "error": str(e)}
+
+    def save_consolidated_results(self, results: list):
+        """Save consolidated results to CSV"""
+        csv_path = "backtest_results/reports/consolidated_results.csv"
+
+        # Prepare data for CSV
+        csv_data = []
+        for result in results:
+            if result["status"] == "success":
+                summary = result["report"]["summary"]
+                csv_data.append({
+                    "Symbol": result["symbol"],
+                    "Initial Capital": summary["initial_capital"],
+                    "Final Capital": summary["final_capital"],
+                    "Total Return %": summary["total_return_pct"],
+                    "Annualized Return %": summary["annualized_return_pct"],
+                    "Total Trades": summary["total_trades"],
+                    "Win Rate %": summary["win_rate"],
+                    "Trading Period (Days)": summary["trading_period_days"],
+                    "Status": "Success"
+                })
+            else:
+                csv_data.append({
+                    "Symbol": result["symbol"],
+                    "Status": "Failed",
+                    "Error": result.get("error", "Unknown error")
+                })
+
+        # Write to CSV
+        with open(csv_path, 'w', newline='') as csvfile:
+            fieldnames = ["Symbol", "Initial Capital", "Final Capital", "Total Return %",
+                          "Annualized Return %", "Total Trades", "Win Rate %",
+                          "Trading Period (Days)", "Status", "Error"]
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(csv_data)
+
+    def run_batch_backtest(self, processor, initial_capital: float = 100000) -> dict:
+        """Run backtests for all available stocks"""
+        self.create_result_directories()
+
+        # Get list of available stocks
+        stocks = processor.cache.list_stocks()
+        results = []
+
+        # Use ThreadPoolExecutor for parallel processing
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+            future_to_stock = {
+                executor.submit(self.run_single_backtest, stock, processor, initial_capital): stock
+                for stock in stocks
+            }
+
+            for future in concurrent.futures.as_completed(future_to_stock):
+                result = future.result()
+                results.append(result)
+
+        # Save consolidated results
+        self.save_consolidated_results(results)
+
+        return {
+            "total_stocks": len(stocks),
+            "successful": len([r for r in results if r["status"] == "success"]),
+            "failed": len([r for r in results if r["status"] == "failed"]),
+            "consolidated_report": "backtest_results/reports/consolidated_results.csv",
+            "charts_directory": "backtest_results/charts",
+            "graphs_directory": "backtest_results/graphs"
+        }
 
     @staticmethod
     def plot_backtest(df: pd.DataFrame, symbol: str):
